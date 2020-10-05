@@ -1,0 +1,28 @@
+---
+keycloak_version: '11.0.2'
+keycloak_url: "https://downloads.jboss.org/keycloak/{{ keycloak_version }}/keycloak-{{ keycloak_version }}.tar.gz"
+keycloak_checksum: "sha1:9c870a2fdf7bb44933c23d264ee9a360af4b6a44"
+keycloak_packages:
+  - java-11-openjdk-headless
+  - tar
+  - gzip
+keycloak_install_dir: /usr/local/keycloak
+keycloak_install_mode: u=rwX,g=rX,o=rX
+keycloak_install_owner: root
+keycloak_install_group: root
+keycloak_install_users_file: "{{ keycloak_install_dir }}/standalone/configuration/keycloak-add-user.json"
+
+keycloak_private_key: /etc/pki/tls/private/localhost.localdomain.pem
+keycloak_certificate: /etc/pki/tls/certs/localhost.localdomain.crt
+keycloak_chain: /etc/pki/tls/certs/pacifica_chain.io.crt
+keycloak_keystore_host: localhost
+keycloak_keystore_path: "{{ keycloak_install_dir }}/standalone/configuration/keycloak.jks"
+keycloak_keystore_pkcs12: "{{ keycloak_install_dir }}/standalone/configuration/keycloak.pkcs12"
+keycloak_keystore_secret: pass:secret
+
+keycloak_service_file: /etc/systemd/system/keycloak.service
+keycloak_service_mode: '0644'
+keycloak_service_address: '0.0.0.0'
+
+keycloak_admin_password: admin
+keycloak_realms: []

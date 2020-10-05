@@ -1,0 +1,54 @@
+---
+- name: Unpack Keycloak Archive
+  unarchive:
+    remote_src: yes
+    src: "{{ keycloak_install_dir }}/keycloak.tar.gz"
+    dest: "{{ keycloak_install_dir }}"
+    mode: "{{ keycloak_install_mode }}"
+    owner: "{{ keycloak_install_owner }}"
+    group: "{{ keycloak_install_group }}"
+    extra_opts:
+      - --strip=1
+- name: Rebuild PKCS12 File
+  command:
+    argv:
+      - openssl
+      - pkcs12
+      - -export
+      - -password
+      - "{{ keycloak_keystore_secret }}"
+      - -in
+      - "{{ keycloak_keystore_path | dirname }}/keycloak.cert"
+      - -inkey
+      - "{{ keycloak_keystore_path | dirname }}/keycloak.key"
+      - -name
+      - "{{ keycloak_keystore_host }}"
+      - -out
+      - "{{ keycloak_keystore_pkcs12 }}"
+- name: Rebuild Keystore
+  shell: |
+    set -xe
+    keytool \
+      -importkeystore \
+      -noprompt \
+      -destkeystore "{{ keycloak_keystore_path }}2" \
+      -srckeystore "{{ keycloak_keystore_pkcs12 }}" \
+      -srcstoretype PKCS12 \
+      -srcstorepass "{{ keycloak_keystore_secret.split(':')[1] }}" \
+      -deststorepass "{{ keycloak_keystore_secret }}"
+    keytool \
+      -import \
+      -alias cabundle \
+      -trustcacerts \
+      -noprompt \
+      -storepass "{{ keycloak_keystore_secret }}" \
+      -file "{{ keycloak_keystore_path | dirname }}/keycloak-chain.cert" \
+      -keystore "{{ keycloak_keystore_path }}2"
+    chmod "{{ keycloak_install_mode }}" "{{ keycloak_keystore_path }}2"
+    chown "{{ keycloak_install_owner }}:{{ keycloak_install_group }}" "{{ keycloak_keystore_path }}2"
+    mv "{{ keycloak_keystore_path }}2" "{{ keycloak_keystore_path }}"
+- name: Restart Keycloak
+  systemd:
+    name: keycloak
+    daemon_reload: yes
+    state: restarted

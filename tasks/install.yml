@@ -1,0 +1,20 @@
+---
+- name: Create Install Directory
+  file:
+    state: directory
+    path: "{{ keycloak_install_dir }}"
+    mode: "{{ keycloak_install_mode }}"
+    owner: "{{ keycloak_install_owner }}"
+    group: "{{ keycloak_install_group }}"
+- name: Download the Keycloak Tarfile
+  get_url:
+    url: "{{ keycloak_url }}"
+    checksum: "{{ keycloak_checksum }}"
+    dest: "{{ keycloak_install_dir }}/keycloak.tar.gz"
+    mode: "{{ keycloak_install_mode }}"
+    owner: "{{ keycloak_install_owner }}"
+    group: "{{ keycloak_install_group }}"
+  notify:
+    - Unpack Keycloak Archive
+- name: Force Handlers
+  meta: flush_handlers

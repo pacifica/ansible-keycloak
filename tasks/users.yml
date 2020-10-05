@@ -1,0 +1,13 @@
+---
+- name: Verify Admin User File
+  uri:
+    url: http://localhost:8080/auth/
+    return_content: yes
+  register: frontpage_result
+- name: Add the admin user (if it doesn't exist)
+  command: "{{ keycloak_install_dir }}/bin/add-user-keycloak.sh -u admin -p {{ keycloak_admin_password }} --roles admin"
+  args:
+    chdir: "{{ keycloak_install_dir }}"
+  when: "'Please create an initial admin user to get started.' in frontpage_result.content"
+  notify:
+    - Restart Keycloak

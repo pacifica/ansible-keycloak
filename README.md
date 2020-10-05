@@ -1,38 +1,57 @@
-Role Name
-=========
+Pacifica Keycloak Ansible Role
+==============================
 
-A brief description of the role goes here.
+This Ansible role manages a configuration of Keycloak that is specific to Pacifica
+services. This role does require Keycloak to use SSL/TLS connections, and does not
+have options to disable that (because why?). The default configurations for SSL/TLS
+certificates conveniently match the outputs of the defaults for the
+[Pacifica CertInfra Ansible Role](https://github.com/pacifica/ansible-certinfra).
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+ * Ansible >= 2.9
+ * System SSL Key, Certificate and Chain (PEM format)
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+There are a lot of variables in the [default](defaults/main.yml) that I won't
+cover here, the basics will be covered here:
+
+  * Version Variables - if you change one, change them all...
+    * `keycloak_version` (default: '11.0.2')
+    * `keycloak_url` (default: https://downloads.jboss.org/keycloak/{{ keycloak_version }}/keycloak-{{ keycloak_version }}.tar.gz)
+    * `keycloak_checksum` (default: sha1:9c870a2fdf7bb44933c23d264ee9a360af4b6a44)
+  * Packages and Install
+    * `keycloak_packages` (default: ['java-11-openjdk-headless', 'tar', 'gzip'])
+    * `keycloak_install_dir` (default: /usr/local/keycloak)
+    * `keycloak_install_owner` (default: root)
+    * `keycloak_install_group` (default: root)
+  * Certificiate, Key and Chain
+    * `keycloak_private_key` (default: /etc/pki/tls/private/localhost.localdomain.pem)
+    * `keycloak_certificate` (default: /etc/pki/tls/certs/localhost.localdomain.crt)
+    * `keycloak_chain` (default: /etc/pki/tls/certs/pacifica_chain.io.crt)
+  * Network Configurations
+    * `keycloak_service_address` (default: '0.0.0.0')
+  * Admin Password
+    * `keycloak_admin_password` (default: 'admin')
 
 Dependencies
 ------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+None
 
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
-
+```
     - hosts: servers
       roles:
-         - { role: username.rolename, x: 42 }
+         - { role: pacifica.ansible_keycloak, keycloak_admin_password: 'admin1234' }
+```
 
 License
 -------
 
-BSD
-
-Author Information
-------------------
-
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+LGPL-v3

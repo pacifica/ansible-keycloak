@@ -1,0 +1,27 @@
+---
+- name: Setup Systemd Service
+  copy:
+    dest: "{{ keycloak_service_file }}"
+    content: |
+      [Unit]
+      Description=Manages the Keycloak service.
+      After=network.target
+      [Service]
+      User={{ keycloak_install_owner }}
+      Group={{ keycloak_install_group }}
+      ExecStart={{ keycloak_install_dir }}/bin/standalone.sh -b {{ keycloak_service_address }}
+      KillSignal=TERM
+      [Install]
+      WantedBy=multi-user.target
+    mode: "{{ keycloak_service_mode }}"
+    owner: root
+    group: root
+  notify:
+    - Restart Keycloak
+- name: Flush Handlers
+  meta: flush_handlers
+- name: Make sure Keycloak is started
+  systemd:
+    name: keycloak
+    enabled: yes
+    state: started

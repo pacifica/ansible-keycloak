@@ -1,0 +1,29 @@
+---
+- name: Wait for admin endpoint to be there
+  uri:
+    url: http://localhost:9990
+    remote_src: yes
+  register: admin_endpoint_result
+  until: (admin_endpoint_result.status is defined) and (admin_endpoint_result.status == 200)
+  retries: 30
+- name: Check for UndertowRealm in Config
+  command: "grep -q UndertowRealm {{ keycloak_install_dir }}/standalone/configuration/standalone.xml"
+  register: check_realm_result
+  changed_when: no
+  ignore_errors: yes
+- name: Setup SSL Realm in Keycloak
+  shell: |
+    {{ keycloak_install_dir }}/bin/jboss-cli.sh <<EOF
+    connect
+    /core-service=management/security-realm=UndertowRealm:add()
+    /core-service=management/security-realm=UndertowRealm/server-identity=ssl:add( \
+      keystore-path=keycloak.jks, \
+      keystore-relative-to=jboss.server.config.dir, \
+      keystore-password={{ keycloak_keystore_secret }}, \
+      alias=localhost \
+    )
+    /subsystem=undertow/server=default-server/https-listener=https:write-attribute(name=security-realm, value=UndertowRealm)
+    reload
+    EOF
+  when: check_realm_result.rc != 0
+  ignore_errors: yes
