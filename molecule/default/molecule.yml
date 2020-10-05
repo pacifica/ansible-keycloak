@@ -1,0 +1,19 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: docker
+lint: yamllint . && ansible-lint -x 106
+platforms:
+  - name: instance
+    image: geerlingguy/docker-centos8-ansible:latest
+    privileged: true
+    capabilities:
+      - SYS_ADMIN
+    volumes:
+      - "/sys/fs/cgroup:/sys/fs/cgroup:ro"
+    command: /lib/systemd/systemd
+provisioner:
+  name: ansible
+verifier:
+  name: ansible

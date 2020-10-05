@@ -1,0 +1,5 @@
+---
+- name: Install Packages for Keycloak
+  package:
+    state: present
+    name: "{{ keycloak_packages }}"

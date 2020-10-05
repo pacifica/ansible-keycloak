@@ -1,0 +1,35 @@
+---
+- name: Copy Certificate File
+  copy:
+    src: "{{ keycloak_certificate }}"
+    dest: "{{ keycloak_keystore_path | dirname }}/keycloak.cert"
+    mode: "{{ keycloak_install_mode }}"
+    owner: "{{ keycloak_install_owner }}"
+    group: "{{ keycloak_install_group }}"
+    remote_src: yes
+  notify:
+    - Rebuild PKCS12 File
+    - Rebuild Keystore
+- name: Copy Key File
+  copy:
+    src: "{{ keycloak_private_key }}"
+    dest: "{{ keycloak_keystore_path | dirname }}/keycloak.key"
+    mode: "{{ keycloak_install_mode }}"
+    owner: "{{ keycloak_install_owner }}"
+    group: "{{ keycloak_install_group }}"
+    remote_src: yes
+  notify:
+    - Rebuild PKCS12 File
+    - Rebuild Keystore
+- name: Copy CA Chain File
+  copy:
+    src: "{{ keycloak_chain }}"
+    dest: "{{ keycloak_keystore_path | dirname }}/keycloak-chain.cert"
+    mode: "{{ keycloak_install_mode }}"
+    owner: "{{ keycloak_install_owner }}"
+    group: "{{ keycloak_install_group }}"
+    remote_src: yes
+  notify:
+    - Rebuild Keystore
+- name: Flush Handlers
+  meta: flush_handlers

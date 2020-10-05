@@ -1,0 +1,7 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    - name: "Include pacifica.ansible_keycloak"
+      include_role:
+        name: "pacifica.ansible_keycloak"
