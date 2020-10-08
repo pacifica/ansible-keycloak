@@ -3,7 +3,21 @@
 
 - name: Verify
   hosts: all
+  collections:
+    - community.general
   tasks:
-  - name: Example assertion
-    assert:
-      that: true
+    - name: Install netstat
+      package:
+        name:
+          - net-tools
+    - name: Gather facts on listening ports
+      listen_ports_facts:
+    - name: TCP ports for 8080 and 8443 should be owned by same process
+      assert:
+        that:
+          - tcp_listen_violations.0.pid == tcp_listen_violations.1.pid
+      vars:
+        tcp_listen_violations: "{{ ansible_facts.tcp_listen | selectattr('port', 'in', tcp_whitelist) | list }}"
+        tcp_whitelist:
+          - 8443
+          - 8080
