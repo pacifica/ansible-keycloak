@@ -7,10 +7,9 @@
   until: (admin_endpoint_result.status is defined) and (admin_endpoint_result.status == 200)
   retries: 30
 - name: Check for UndertowRealm in Config
-  command: "grep -q UndertowRealm {{ keycloak_install_dir }}/standalone/configuration/standalone.xml"
-  register: check_realm_result
-  changed_when: no
-  ignore_errors: yes
+  slurp:
+    src: "{{ keycloak_install_dir }}/standalone/configuration/standalone.xml"
+  register: standalone_config_result
 - name: Setup SSL Realm in Keycloak
   shell: |
     {{ keycloak_install_dir }}/bin/jboss-cli.sh <<EOF
@@ -25,5 +24,13 @@
     /subsystem=undertow/server=default-server/https-listener=https:write-attribute(name=security-realm, value=UndertowRealm)
     reload
     EOF
-  when: check_realm_result.rc != 0
+  when: "'UndertowRealm' not in (standalone_config_result.content | b64decode)"
   ignore_errors: yes
+- name: Check for UndertowRealm in Config (again...)
+  slurp:
+    src: "{{ keycloak_install_dir }}/standalone/configuration/standalone.xml"
+  register: standalone_config_result
+- name: Assert the presents of UndertowRealm
+  assert:
+    that:
+      - "'UndertowRealm' in (standalone_config_result.content | b64decode)"
