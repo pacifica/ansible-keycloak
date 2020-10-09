@@ -1,10 +1,12 @@
 ---
 - name: Wait for admin endpoint to be there
-  uri:
-    url: http://localhost:9990
-    remote_src: yes
+  shell: |
+    {{ keycloak_install_dir }}/bin/jboss-cli.sh <<EOF
+    connect
+    EOF
   register: admin_endpoint_result
-  until: (admin_endpoint_result.status is defined) and (admin_endpoint_result.status == 200)
+  changed_when: false
+  until: (admin_endpoint_result.rc is defined) and (admin_endpoint_result.rc == 0)
   retries: 30
 - name: Check for UndertowRealm in Config
   slurp:
