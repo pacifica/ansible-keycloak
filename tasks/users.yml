@@ -11,6 +11,8 @@
   when: "'Please create an initial admin user to get started.' in frontpage_result.content"
   notify:
     - Restart Keycloak
+- name: Flush Handlers
+  meta: flush_handlers
 - name: Get User Admin State
   command: 
     argv:
@@ -27,7 +29,7 @@
   changed_when: false
 - name: Set JSON Object for Admin User
   set_fact:
-    admin_user_obj: "{{ admin_user_result.stdout | from_json }}"
+    admin_user_obj: "{{ admin_user_result.stdout | from_json | first }}"
 - name: Set Admin Email Address
   command:
     argv:
@@ -40,4 +42,4 @@
       - "--password={{ keycloak_admin_password }}"
       - -s
       - "email={{ keycloak_admin_email }}"
-  when: admin_user_obj.email != keycloak_admin_email
+  when: admin_user_obj.email is not defined or admin_user_obj.email != keycloak_admin_email
