@@ -1,9 +1,13 @@
 ---
 dependency:
   name: galaxy
+lint: yamllint . && ansible-lint -x 106 -x 204
 driver:
-  name: docker
-lint: yamllint . && ansible-lint -x 106
+  name: delegated
+  options:
+    login_cmd_template: 'docker exec -ti {instance} bash'
+    ansible_connection_options:
+      ansible_connection: docker
 platforms:
   - name: instance
     image: geerlingguy/docker-centos8-ansible:latest
@@ -15,5 +19,7 @@ platforms:
     command: /lib/systemd/systemd
 provisioner:
   name: ansible
+  connection_options:
+    ansible_connection: docker
 verifier:
   name: ansible

@@ -11,3 +11,44 @@
   when: "'Please create an initial admin user to get started.' in frontpage_result.content"
   notify:
     - Restart Keycloak
+- name: Flush Handlers
+  meta: flush_handlers
+- name: Wait for admin endpoint to be there
+  shell: |
+    {{ keycloak_install_dir }}/bin/jboss-cli.sh <<EOF
+    connect
+    EOF
+  register: admin_endpoint_result
+  changed_when: false
+  until: (admin_endpoint_result.rc is defined) and (admin_endpoint_result.rc == 0)
+  retries: 30
+- name: Get User Admin State
+  command:
+    argv:
+      - "{{ keycloak_install_dir }}/bin/kcadm.sh"
+      - get
+      - users
+      - --realm=master
+      - --server=http://localhost:8080/auth
+      - --user=admin
+      - "--password={{ keycloak_admin_password }}"
+      - -q
+      - username=admin
+  register: admin_user_result
+  changed_when: false
+- name: Set JSON Object for Admin User
+  set_fact:
+    admin_user_obj: "{{ admin_user_result.stdout | from_json | first }}"
+- name: Set Admin Email Address
+  command:
+    argv:
+      - "{{ keycloak_install_dir }}/bin/kcadm.sh"
+      - update
+      - "users/{{ admin_user_obj.id }}"
+      - --realm=master
+      - --server=http://localhost:8080/auth
+      - --user=admin
+      - "--password={{ keycloak_admin_password }}"
+      - -s
+      - "email={{ keycloak_admin_email }}"
+  when: admin_user_obj.email is not defined or admin_user_obj.email != keycloak_admin_email

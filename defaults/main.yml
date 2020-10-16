@@ -25,4 +25,5 @@ keycloak_service_mode: '0644'
 keycloak_service_address: '0.0.0.0'
 
 keycloak_admin_password: admin
+keycloak_admin_email: admin@pacifica.io
 keycloak_realms: []
