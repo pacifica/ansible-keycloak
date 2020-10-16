@@ -13,6 +13,15 @@
     - Restart Keycloak
 - name: Flush Handlers
   meta: flush_handlers
+- name: Wait for admin endpoint to be there
+  shell: |
+    {{ keycloak_install_dir }}/bin/jboss-cli.sh <<EOF
+    connect
+    EOF
+  register: admin_endpoint_result
+  changed_when: false
+  until: (admin_endpoint_result.rc is defined) and (admin_endpoint_result.rc == 0)
+  retries: 30
 - name: Get User Admin State
   command:
     argv:
