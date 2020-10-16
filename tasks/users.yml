@@ -14,7 +14,7 @@
 - name: Flush Handlers
   meta: flush_handlers
 - name: Get User Admin State
-  command: 
+  command:
     argv:
       - "{{ keycloak_install_dir }}/bin/kcadm.sh"
       - get

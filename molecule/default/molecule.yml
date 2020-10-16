@@ -1,7 +1,7 @@
 ---
 dependency:
   name: galaxy
-lint: yamllint . && ansible-lint -x 106
+lint: yamllint . && ansible-lint -x 106 -x 204
 driver:
   name: delegated
   options:
